@@ -48,3 +48,52 @@ nav#menu{display:none;position:absolute;left:0;right:0;top:100%;background:#fff;
 @media(max-width:560px){.cards4,.grid2,.foot{grid-template-columns:1fr}.utility .wrap{font-size:.82rem}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
 .gi.fit img{object-fit:contain;background:#fff}
+/* Reference-inspired visual refresh */
+:root{--ink:#10213f;--mut:#5d6b80;--bg:#fff;--sur:#f4f7fb;--line:#dce5f0;--blue:#1768d8;--lime:#ffc928;--r:18px}
+body{color:#142541;background:#fff;font-family:"DM Sans",Arial,sans-serif}
+.utility{background:#10213f;color:#fff}.utility a{color:#ffc928}
+.nav{box-shadow:0 3px 14px rgba(15,35,68,.06)}.brand svg rect{fill:#1768d8}.brand svg path{fill:#ffc928}
+.btn{border-radius:10px;border-width:1px;padding:12px 20px}.btn-go{background:#ffc928;border-color:#ffc928;color:#10213f}.btn-blue{background:#1768d8;border-color:#1768d8;color:#fff}.btn-line{border-color:#1768d8;color:#1768d8}
+.hero{position:relative;overflow:hidden;background-color:#10213f;background-image:radial-gradient(rgba(255,255,255,.13) 1px,transparent 1px);background-size:18px 18px;color:#fff;padding:70px 0}
+.hero h1{color:#fff;max-width:12ch}.hero .lead,.hero .rating{color:#d8e2f2}.hero .live{color:#ffc928}.hero .ph{border:5px solid rgba(255,255,255,.12);box-shadow:0 18px 50px rgba(0,0,0,.22)}
+.book{background:#1768d8}.book form{box-shadow:0 12px 35px rgba(9,29,61,.12)}
+.sec{padding:68px 0}.alt{background:#f4f7fb}
+h2{color:#10213f}.section-kicker,.tag{font-size:.76rem;letter-spacing:.13em;font-weight:800;color:#1768d8}.section-intro{color:var(--mut);max-width:650px;margin-top:-.7rem;margin-bottom:28px}
+.cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.promo-card,.package-card{background:#fff;border:1px solid #dce5f0;border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(16,33,63,.06)}
+.promo-card{padding:26px;display:flex;flex-direction:column;align-items:flex-start}.promo-card p,.package-body p{color:var(--mut);flex:1}.promo-card .btn{margin-top:12px}
+.promo-icon{width:46px;height:46px;border-radius:13px;background:#fff4cc;color:#1768d8;display:grid;place-items:center;font-size:1.5rem;font-weight:800}
+.package-card .ph{border-radius:0;aspect-ratio:16/9}.package-body{padding:22px;display:flex;flex-direction:column;align-items:flex-start}.package-body .btn{margin-top:12px}
+.card{border-radius:18px;border-color:#dce5f0;box-shadow:0 8px 24px rgba(16,33,63,.06)}.steps li{border-left-color:#ffc928}.steps li::before{color:#1768d8}
+.gi{border-radius:14px}.rev{background:#fff}.big strong{color:#1768d8}
+footer{background:#10213f}footer a:hover{color:#ffc928}
+@media(max-width:760px){.hero{padding:46px 0}.cards3{grid-template-columns:1fr}.section-kicker{margin-bottom:8px}}
+
+/* Official Maa Kamakhya Travels logo */
+/* Official Maa Kamakhya Travels circular logo */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.brand img {
+  display: block;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .brand img {
+    width: 52px;
+    height: 52px;
+  }
+}
+/* Four sightseeing cards: responsive grid */
+#packages .sightseeing-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1000px) { #packages .sightseeing-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { #packages .sightseeing-grid { grid-template-columns: 1fr; } }
