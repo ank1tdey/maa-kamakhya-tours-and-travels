@@ -1,52 +1,279 @@
-(function(){
-var $=function(s){return document.querySelector(s)};
-var BUSINESS_WA="916295594881";
-document.querySelectorAll("[data-rating]").forEach(function(e){e.textContent=e.closest(".rev")?"4.9 / 5":"4.9/5"});
-$("#year").textContent=new Date().getFullYear();
+'use strict';
 
-// Mobile menu
-var burger=$("#burger"),menu=$("#menu");
-function setMenu(o){menu.classList.toggle("open",o);burger.setAttribute("aria-expanded",o);burger.setAttribute("aria-label",o?"Close menu":"Open menu")}
-burger.addEventListener("click",function(){setMenu(!menu.classList.contains("open"))});
-menu.addEventListener("click",function(e){if(e.target.tagName==="A")setMenu(false)});
+(() => {
+  const BUSINESS_WHATSAPP_NUMBER = '916295594881';
+  const SELECTORS = {
+    menuToggle: '#menuToggle',
+    navigation: '#primaryNavigation',
+    bookingForm: '#rideForm',
+    pickup: '#pickup',
+    destination: '#destination',
+    travelDate: '#travelDate',
+    rideType: '#rideType',
+    vehiclePreference: '#vehiclePreference',
+    passengers: '#passengers',
+    selectedPackage: '#selectedPackage',
+    formStatus: '#formStatus',
+    gallery: '#galleryGrid',
+    galleryEmpty: '#galleryEmpty',
+    lightbox: '#lightbox',
+    lightboxImage: '#lightboxImage',
+    lightboxClose: '#lightboxClose',
+    currentYear: '#currentYear'
+  };
 
-// Image fallbacks
-function missing(img){var f=img.closest(".ph");if(f)f.classList.add("missing");var g=img.closest(".gi");if(g){g.hidden=true;checkGal()}}
-function checkGal(){var any=[].some.call(document.querySelectorAll(".gi"),function(g){return !g.hidden});$("#galEmpty").hidden=any}
-document.querySelectorAll("img").forEach(function(img){
- if(img.complete&&img.naturalWidth===0&&img.getAttribute("src"))missing(img);
- img.addEventListener("error",function(){missing(img)});
-});
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
-// Form
-var form=$("#rideForm"),date=$("#date");
-function today(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-date.min=today();
-function fail(id,msg){var el=$("#"+id);$("#e-"+id).textContent=msg;el.setAttribute("aria-invalid",!!msg);return !msg}
-function preset(sel,val){var s=$(sel);for(var i=0;i<s.options.length;i++)if(s.options[i].text===val)s.selectedIndex=i;$("#book").scrollIntoView();setTimeout(function(){$("#pickup").focus({preventScroll:true})},400)}
-document.querySelectorAll("[data-type]").forEach(function(b){b.addEventListener("click",function(){preset("#type",b.dataset.type)})});
-document.querySelectorAll("[data-vehicle]").forEach(function(b){b.addEventListener("click",function(){preset("#vehicle",b.dataset.vehicle)})});
-form.addEventListener("submit",function(e){
- e.preventDefault();
- var p=$("#pickup").value.trim(),d=$("#dest").value.trim(),dt=date.value;
- var ok=[fail("pickup",p?"":"Enter your pickup location."),fail("dest",d?"":"Enter your destination."),
-  fail("date",!dt?"Choose your travel date.":(dt<today()?"Travel date can't be in the past.":""))].every(Boolean);
- if(!ok){form.querySelector("[aria-invalid=true]").focus();return}
- var parts=dt.split("-"),nice=parts[2]+"/"+parts[1]+"/"+parts[0];
- var msg="Hello MAA KAMAKHYA TOUR & TRAVELS, I would like to enquire about a ride.\n\n"+
-  "Pickup: "+p+"\nDestination: "+d+"\nDate: "+nice+"\nRide type: "+$("#type").value+
-  "\nVehicle: "+$("#vehicle").value+"\nPassengers: "+$("#pax").value+"\n\nPlease confirm availability and fare.";
- var url="https://wa.me/"+BUSINESS_WA+"?text="+encodeURIComponent(msg);
- var w=window.open(url,"_blank","noopener");
- $("#formNote").innerHTML="WhatsApp should now be open with your details. Review and send the message — your ride is not booked until the business confirms it. "+(w?"":'Popup blocked? <a href="'+url+'" target="_blank" rel="noopener">Open WhatsApp</a>.');
-});
-["pickup","dest","date"].forEach(function(id){$("#"+id).addEventListener("input",function(){fail(id,"")})});
+  const elements = Object.fromEntries(
+    Object.entries(SELECTORS).map(([key, selector]) => [key, $(selector)])
+  );
 
-// Lightbox
-var lb=$("#lb"),lbImg=$("#lbImg"),last;
-function closeLb(){lb.hidden=true;if(last)last.focus()}
-$("#gal").addEventListener("click",function(e){var b=e.target.closest(".gi");if(!b)return;last=b;var i=b.querySelector("img");lbImg.src=i.src;lbImg.alt=i.alt;lb.hidden=false;$("#lbClose").focus()});
-$("#lbClose").addEventListener("click",closeLb);
-lb.addEventListener("click",function(e){if(e.target===lb)closeLb()});
-document.addEventListener("keydown",function(e){if(e.key==="Escape"){if(!lb.hidden)closeLb();setMenu(false)}});
+  const getLocalDateString = (date = new Date()) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  function initializeYear() {
+    if (elements.currentYear) {
+      elements.currentYear.textContent = String(new Date().getFullYear());
+    }
+  }
+
+  function initializeMobileNavigation() {
+    const { menuToggle, navigation } = elements;
+    if (!menuToggle || !navigation) return;
+
+    const setMenuOpen = (isOpen) => {
+      navigation.classList.toggle('is-open', isOpen);
+      menuToggle.setAttribute('aria-expanded', String(isOpen));
+      menuToggle.setAttribute('aria-label', isOpen ? 'Close navigation menu' : 'Open navigation menu');
+    };
+
+    menuToggle.addEventListener('click', () => {
+      setMenuOpen(menuToggle.getAttribute('aria-expanded') !== 'true');
+    });
+
+    navigation.addEventListener('click', (event) => {
+      if (event.target.closest('a')) setMenuOpen(false);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') setMenuOpen(false);
+    });
+
+    document.addEventListener('click', (event) => {
+      const clickedInsideMenu = navigation.contains(event.target) || menuToggle.contains(event.target);
+      if (!clickedInsideMenu) setMenuOpen(false);
+    });
+  }
+
+  function initializeImageFallbacks() {
+    const galleryItems = $$('.gallery-item');
+
+    const updateGalleryVisibility = () => {
+      if (!elements.galleryEmpty) return;
+      const hasVisibleImages = galleryItems.some((item) => !item.hidden);
+      elements.galleryEmpty.hidden = hasVisibleImages;
+    };
+
+    $$('img').forEach((image) => {
+      const handleImageError = () => {
+        const frame = image.closest('.image-frame');
+        const galleryItem = image.closest('.gallery-item');
+
+        if (frame) frame.classList.add('image-frame--missing');
+        if (galleryItem) {
+          galleryItem.hidden = true;
+          updateGalleryVisibility();
+        }
+      };
+
+      image.addEventListener('error', handleImageError, { once: true });
+      if (image.complete && image.naturalWidth === 0) handleImageError();
+    });
+
+    updateGalleryVisibility();
+  }
+
+  function setFieldError(field, message) {
+    const errorElement = $(`#${field.id}Error`);
+    field.setAttribute('aria-invalid', String(Boolean(message)));
+    if (errorElement) errorElement.textContent = message;
+    return !message;
+  }
+
+  function validateBookingForm() {
+    const { pickup, destination, travelDate } = elements;
+    const pickupValue = pickup.value.trim();
+    const destinationValue = destination.value.trim();
+    const dateValue = travelDate.value;
+    const today = getLocalDateString();
+
+    const checks = [
+      setFieldError(pickup, pickupValue ? '' : 'Enter your pickup location.'),
+      setFieldError(destination, destinationValue ? '' : 'Enter your destination.'),
+      setFieldError(
+        travelDate,
+        !dateValue ? 'Choose your travel date.' : dateValue < today ? 'Travel date cannot be in the past.' : ''
+      )
+    ];
+
+    const firstInvalidField = [pickup, destination, travelDate].find(
+      (field) => field.getAttribute('aria-invalid') === 'true'
+    );
+
+    if (firstInvalidField) firstInvalidField.focus();
+    return checks.every(Boolean);
+  }
+
+  function createWhatsAppUrl(message) {
+    return `https://wa.me/${BUSINESS_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+  }
+
+  function showWhatsAppFallback(url) {
+    const status = elements.formStatus;
+    status.replaceChildren();
+
+    const message = document.createTextNode(
+      'Your trip details are ready. If WhatsApp did not open, '
+    );
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = 'open WhatsApp manually';
+
+    status.append(message, link, document.createTextNode('. Your ride is not booked until the business confirms it.'));
+  }
+
+  function handleBookingSubmit(event) {
+    event.preventDefault();
+    if (!validateBookingForm()) return;
+
+    const {
+      pickup, destination, travelDate, rideType, vehiclePreference, passengers, formStatus
+    } = elements;
+
+    const [year, month, day] = travelDate.value.split('-');
+    const formattedDate = `${day}/${month}/${year}`;
+    const selectedPackage = elements.selectedPackage?.value;
+    const message = [
+      'Hello MAA KAMAKHYA TOUR & TRAVELS, I would like to enquire about a ride.',
+      '',
+      `Pickup: ${pickup.value.trim()}`,
+      `Destination: ${destination.value.trim()}`,
+      `Date: ${formattedDate}`,
+      `Ride type: ${rideType.value}`,
+      ...(selectedPackage ? [`Package: ${selectedPackage}`] : []),
+      `Vehicle: ${vehiclePreference.value}`,
+      `Passengers: ${passengers.value}`,
+      '',
+      'Please confirm availability and fare.'
+    ].join('\n');
+
+    const whatsappUrl = createWhatsAppUrl(message);
+    const whatsappWindow = window.open(whatsappUrl, '_blank');
+
+    if (whatsappWindow) {
+      whatsappWindow.opener = null;
+      formStatus.textContent = 'WhatsApp should now be open with your details. Review and send the message — your ride is not booked until the business confirms it.';
+    } else {
+      showWhatsAppFallback(whatsappUrl);
+    }
+  }
+
+  function initializeBookingForm() {
+    const { bookingForm, travelDate } = elements;
+    if (!bookingForm || !travelDate) return;
+
+    travelDate.min = getLocalDateString();
+    bookingForm.addEventListener('submit', handleBookingSubmit);
+
+    [elements.pickup, elements.destination, travelDate].forEach((field) => {
+      field.addEventListener('input', () => setFieldError(field, ''));
+      field.addEventListener('change', () => setFieldError(field, ''));
+    });
+
+    $$('[data-ride-type]').forEach((button) => {
+      button.addEventListener('click', () => {
+        elements.rideType.value = button.dataset.rideType;
+        if (elements.selectedPackage) {
+          elements.selectedPackage.value = button.dataset.package || '';
+        }
+        scrollToBooking();
+      });
+    });
+
+    $$('[data-vehicle]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const requestedVehicle = button.dataset.vehicle;
+        const matchingOption = Array.from(elements.vehiclePreference.options).find(
+          (option) => option.value.toLowerCase() === requestedVehicle.toLowerCase()
+        );
+        elements.vehiclePreference.value = matchingOption ? matchingOption.value : 'Recommend a vehicle';
+        scrollToBooking();
+      });
+    });
+
+  }
+
+  function scrollToBooking() {
+    const bookingSection = $('#book');
+    if (!bookingSection) return;
+    bookingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.setTimeout(() => elements.pickup?.focus({ preventScroll: true }), 450);
+  }
+
+  function initializeLightbox() {
+    const { gallery, lightbox, lightboxImage, lightboxClose } = elements;
+    if (!gallery || !lightbox || !lightboxImage || !lightboxClose) return;
+
+    let previouslyFocusedElement = null;
+
+    const closeLightbox = () => {
+      lightbox.hidden = true;
+      lightboxImage.removeAttribute('src');
+      if (previouslyFocusedElement?.isConnected) previouslyFocusedElement.focus();
+    };
+
+    gallery.addEventListener('click', (event) => {
+      const galleryButton = event.target.closest('[data-gallery-image]');
+      if (!galleryButton || galleryButton.hidden) return;
+
+      const image = $('img', galleryButton);
+      if (!image) return;
+
+      previouslyFocusedElement = galleryButton;
+      lightboxImage.src = galleryButton.dataset.galleryImage;
+      lightboxImage.alt = image.alt;
+      lightbox.hidden = false;
+      lightboxClose.focus();
+    });
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (event) => {
+      if (event.target === lightbox) closeLightbox();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !lightbox.hidden) closeLightbox();
+    });
+  }
+
+  function initialize() {
+    initializeYear();
+    initializeMobileNavigation();
+    initializeImageFallbacks();
+    initializeBookingForm();
+    initializeLightbox();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialize, { once: true });
+  } else {
+    initialize();
+  }
 })();
