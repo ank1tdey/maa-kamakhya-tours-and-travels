@@ -71,34 +71,41 @@
   }
 
   function initializeImageFallbacks() {
-    const galleryItems = $$('.gallery-item');
-
     const updateGalleryVisibility = () => {
-      if (!elements.galleryEmpty) return;
-      const hasVisibleImages = galleryItems.some((item) => !item.hidden);
-      elements.galleryEmpty.hidden = hasVisibleImages;
+      if (!elements.galleryEmpty || !elements.gallery) return;
+      const visibleImages = $$('.gallery-item', elements.gallery).some((item) => !item.hidden);
+      elements.galleryEmpty.hidden = visibleImages;
     };
 
+    // Capture image errors so images inserted later by the CMS are handled too.
+    document.addEventListener('error', (event) => {
+      const image = event.target;
+      if (!(image instanceof HTMLImageElement)) return;
+
+      const frame = image.closest('.image-frame');
+      const galleryItem = image.closest('.gallery-item');
+
+      if (frame) frame.classList.add('image-frame--missing');
+      if (galleryItem) {
+        galleryItem.hidden = true;
+        updateGalleryVisibility();
+      }
+    }, true);
+
     $$('img').forEach((image) => {
-      const handleImageError = () => {
+      if (image.complete && image.naturalWidth === 0) {
         const frame = image.closest('.image-frame');
         const galleryItem = image.closest('.gallery-item');
-
         if (frame) frame.classList.add('image-frame--missing');
-        if (galleryItem) {
-          galleryItem.hidden = true;
-          updateGalleryVisibility();
-        }
-      };
-
-      image.addEventListener('error', handleImageError, { once: true });
-      if (image.complete && image.naturalWidth === 0) handleImageError();
+        if (galleryItem) galleryItem.hidden = true;
+      }
     });
 
     updateGalleryVisibility();
   }
 
   function setFieldError(field, message) {
+    if (!field) return false;
     const errorElement = $(`#${field.id}Error`);
     field.setAttribute('aria-invalid', String(Boolean(message)));
     if (errorElement) errorElement.textContent = message;
@@ -107,6 +114,8 @@
 
   function validateBookingForm() {
     const { pickup, destination, travelDate } = elements;
+    if (!pickup || !destination || !travelDate) return false;
+
     const pickupValue = pickup.value.trim();
     const destinationValue = destination.value.trim();
     const dateValue = travelDate.value;
@@ -135,18 +144,18 @@
 
   function showWhatsAppFallback(url) {
     const status = elements.formStatus;
-    status.replaceChildren();
+    if (!status) return;
 
-    const message = document.createTextNode(
-      'Your trip details are ready. If WhatsApp did not open, '
-    );
+    status.replaceChildren();
+    status.append(document.createTextNode('Your trip details are ready. If WhatsApp did not open, '));
+
     const link = document.createElement('a');
     link.href = url;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
     link.textContent = 'open WhatsApp manually';
 
-    status.append(message, link, document.createTextNode('. Your ride is not booked until the business confirms it.'));
+    status.append(link, document.createTextNode('. Your ride is not booked until the business confirms it.'));
   }
 
   function handleBookingSubmit(event) {
@@ -185,6 +194,13 @@
     }
   }
 
+  function scrollToBooking() {
+    const bookingSection = $('#book');
+    if (!bookingSection) return;
+    bookingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.setTimeout(() => elements.pickup?.focus({ preventScroll: true }), 450);
+  }
+
   function initializeBookingForm() {
     const { bookingForm, travelDate } = elements;
     if (!bookingForm || !travelDate) return;
@@ -192,19 +208,21 @@
     travelDate.min = getLocalDateString();
     bookingForm.addEventListener('submit', handleBookingSubmit);
 
-    [elements.pickup, elements.destination, travelDate].forEach((field) => {
+    [elements.pickup, elements.destination, travelDate].filter(Boolean).forEach((field) => {
       field.addEventListener('input', () => setFieldError(field, ''));
       field.addEventListener('change', () => setFieldError(field, ''));
     });
 
-    $$('[data-ride-type]').forEach((button) => {
-      button.addEventListener('click', () => {
-        elements.rideType.value = button.dataset.rideType;
-        if (elements.selectedPackage) {
-          elements.selectedPackage.value = button.dataset.package || '';
-        }
-        scrollToBooking();
-      });
+    // Event delegation supports package/offer buttons inserted asynchronously by cms.js.
+    document.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-ride-type]');
+      if (!button) return;
+
+      elements.rideType.value = button.dataset.rideType;
+      if (elements.selectedPackage) {
+        elements.selectedPackage.value = button.dataset.package || '';
+      }
+      scrollToBooking();
     });
 
     $$('[data-vehicle]').forEach((button) => {
@@ -217,14 +235,6 @@
         scrollToBooking();
       });
     });
-
-  }
-
-  function scrollToBooking() {
-    const bookingSection = $('#book');
-    if (!bookingSection) return;
-    bookingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    window.setTimeout(() => elements.pickup?.focus({ preventScroll: true }), 450);
   }
 
   function initializeLightbox() {
@@ -239,6 +249,7 @@
       if (previouslyFocusedElement?.isConnected) previouslyFocusedElement.focus();
     };
 
+    // Delegation supports gallery images rendered later by the CMS.
     gallery.addEventListener('click', (event) => {
       const galleryButton = event.target.closest('[data-gallery-image]');
       if (!galleryButton || galleryButton.hidden) return;

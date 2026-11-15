@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Maa Kamakhya — Admin</title>
+  <link rel="stylesheet" href="admin.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="config.js" defer></script>
+  <script src="admin.js" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div><p class="eyebrow">MAA KAMAKHYA TOUR &amp; TRAVELS</p><h1>Website Admin</h1></div>
+      <button id="signOut" class="button secondary" hidden>Sign out</button>
+    </header>
+
+    <section id="setupNotice" class="notice" hidden>Admin setup is not connected yet. Check config.js and the Supabase CDN script.</section>
+
+    <section id="loginView" class="login card">
+      <p class="eyebrow">PRIVATE ACCESS</p>
+      <h2>Welcome back</h2>
+      <p class="muted">Sign in to manage website content.</p>
+      <form id="loginForm">
+        <label>Email address<input id="email" type="email" autocomplete="username" required maxlength="254"></label>
+        <label>Password<input id="password" type="password" autocomplete="current-password" required minlength="8"></label>
+        <button class="button primary" type="submit">Sign in</button>
+        <p id="loginMessage" class="message" role="status"></p>
+      </form>
+    </section>
+
+    <section id="appView" hidden>
+      <div class="welcome">
+        <div><p class="eyebrow">CONTENT MANAGEMENT</p><h2>Manage your website</h2><p class="muted">Changes saved here will appear on the public website after it refreshes.</p></div>
+        <span id="userEmail" class="user-pill"></span>
+      </div>
+
+      <nav class="tabs" aria-label="Admin sections">
+        <button class="tab active" data-tab="packages" type="button">Packages</button>
+        <button class="tab" data-tab="offers" type="button">Offers</button>
+        <button class="tab" data-tab="gallery" type="button">Gallery</button>
+      </nav>
+
+      <section class="panel" id="packagesPanel">
+        <div class="panel-head"><div><h3>Sightseeing packages</h3><p class="muted">Add or update the trips shown on your website.</p></div></div>
+        <form id="packageForm" class="editor">
+          <input id="packageId" type="hidden">
+          <label>Package name<input id="packageTitle" required maxlength="100"></label>
+          <label>Short description<textarea id="packageDescription" required maxlength="500" rows="3"></textarea></label>
+          <div class="two">
+            <label>Category<input id="packageCategory" value="SIGHTSEEING" maxlength="40"></label>
+            <label>Price (₹)<input id="packagePrice" type="number" min="0" step="1" placeholder="Leave blank if price on request"></label>
+          </div>
+          <label>Upload package image <span class="muted">(optional · JPG, PNG or WebP · max 5 MB)</span>
+            <input id="packageFile" type="file" accept="image/jpeg,image/png,image/webp">
+          </label>
+          <div id="packageImagePreviewWrap" class="image-preview" hidden>
+            <img id="packageImagePreview" alt="Package image preview">
+            <button id="removePackageImage" class="button secondary" type="button">Remove image</button>
+          </div>
+          <label>Image URL <span class="muted">(optional fallback for an externally hosted image)</span>
+            <input id="packageImage" type="url" maxlength="1000" placeholder="https://...">
+          </label>
+          <div class="actions">
+            <button class="button primary" type="submit">Save package</button>
+            <button class="button secondary" id="cancelPackage" type="button">Clear</button>
+          </div>
+          <p id="packageMessage" class="message" role="status"></p>
+        </form>
+        <div id="packageList" class="item-list"></div>
+      </section>
+
+      <section class="panel" id="offersPanel" hidden>
+        <div class="panel-head"><div><h3>Special offers</h3><p class="muted">Publish, edit or remove offers.</p></div></div>
+        <form id="offerForm" class="editor">
+          <input id="offerId" type="hidden">
+          <label>Offer title<input id="offerTitle" required maxlength="100"></label>
+          <label>Description<textarea id="offerDescription" required maxlength="500" rows="3"></textarea></label>
+          <label>Button label<input id="offerButton" value="Enquire Now" maxlength="40"></label>
+          <label><input id="offerActive" type="checkbox" checked> Show this offer on the website</label>
+          <div class="actions"><button class="button primary" type="submit">Save offer</button><button class="button secondary" id="cancelOffer" type="button">Clear</button></div>
+          <p id="offerMessage" class="message" role="status"></p>
+        </form>
+        <div id="offerList" class="item-list"></div>
+      </section>
+
+      <section class="panel" id="galleryPanel" hidden>
+        <div class="panel-head"><div><h3>Website gallery</h3><p class="muted">Upload photos or remove existing ones.</p></div></div>
+        <form id="galleryForm" class="editor">
+          <label>Photo<input id="galleryFile" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+          <label>Photo description<input id="galleryAlt" required maxlength="160" placeholder="Describe the photo"></label>
+          <button class="button primary" type="submit">Upload photo</button>
+          <p class="muted small">JPG, PNG or WebP; maximum 5 MB per image.</p>
+          <p id="galleryMessage" class="message" role="status"></p>
+        </form>
+        <div id="galleryList" class="gallery-list"></div>
+      </section>
+    </section>
+    <footer>WebToU · Secure content management</footer>
+  </main>
+</body>
+</html>
